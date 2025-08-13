@@ -5,19 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Les Petits Plats</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Rognage multi-lignes sans plugin -->
+    <style>
+      .line-clamp-3 {
+        display: -webkit-box;
+        line-clamp: 3;
+        box-orient: vertical;
+        overflow: hidden;
+      }
+    </style>
   </head>
   <body class="bg-gray-100 text-gray-900">
-    <!-- HEADER -->
+    <!-- HEADER (déjà conforme) -->
     <header
       class="relative h-[650px] bg-cover bg-center"
       style="background-image: url('assets/hero-banner.png')"
     >
-      <!-- Contenu centré -->
       <div
         class="relative z-10 max-w-5xl mx-auto px-4 h-full flex flex-col justify-center items-center text-center"
       >
         <!-- Logo -->
-        <div class="absolute top-6 -left-6 flex items-center space-x-2">
+        <div class="absolute top-6 left-0 flex items-center space-x-2">
           <img src="assets/logo.png" alt="Logo Les Petits Plats" class="h-8" />
         </div>
 
@@ -31,6 +40,7 @@
 
         <!-- Barre de recherche -->
         <form
+          id="searchForm"
           class="w-full max-w-4xl flex"
           role="search"
           aria-label="Recherche de recettes"
@@ -66,15 +76,124 @@
             </svg>
           </button>
         </form>
+
+        <!-- TAGS actifs (aria-live pour annoncer les changements) -->
+        <div
+          id="activeTags"
+          class="mt-4 flex flex-wrap gap-2 max-w-4xl"
+          aria-live="polite"
+        ></div>
       </div>
     </header>
 
-    <main class="max-w-4xl mx-auto p-4">
+    <!-- FILTRES avancés -->
+    <section class="bg-white py-6 shadow-sm">
+      <div class="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Ingrédients -->
+        <div class="relative" data-filter="ingredients">
+          <button
+            type="button"
+            id="toggle-ingredients"
+            class="w-full p-4 rounded-lg border border-gray-300 flex justify-between items-center hover:border-yellow-400"
+            aria-expanded="false"
+            aria-controls="panel-ingredients"
+          >
+            <span>Ingrédients</span>
+            <span aria-hidden="true">▾</span>
+          </button>
+          <div
+            id="panel-ingredients"
+            class="hidden absolute z-20 left-0 right-0 mt-2 bg-white rounded-xl shadow p-3"
+          >
+            <label for="input-ingredients" class="sr-only"
+              >Rechercher un ingrédient</label
+            >
+            <input
+              id="input-ingredients"
+              type="text"
+              placeholder="Rechercher…"
+              class="w-full p-2 mb-2 border rounded focus:ring-2 focus:ring-yellow-400"
+            />
+            <ul
+              id="list-ingredients"
+              class="max-h-64 overflow-auto divide-y"
+            ></ul>
+          </div>
+        </div>
+
+        <!-- Appareils -->
+        <div class="relative" data-filter="appliances">
+          <button
+            type="button"
+            id="toggle-appliances"
+            class="w-full p-4 rounded-lg border border-gray-300 flex justify-between items-center hover:border-yellow-400"
+            aria-expanded="false"
+            aria-controls="panel-appliances"
+          >
+            <span>Appareils</span>
+            <span aria-hidden="true">▾</span>
+          </button>
+          <div
+            id="panel-appliances"
+            class="hidden absolute z-20 left-0 right-0 mt-2 bg-white rounded-xl shadow p-3"
+          >
+            <label for="input-appliances" class="sr-only"
+              >Rechercher un appareil</label
+            >
+            <input
+              id="input-appliances"
+              type="text"
+              placeholder="Rechercher…"
+              class="w-full p-2 mb-2 border rounded focus:ring-2 focus:ring-yellow-400"
+            />
+            <ul
+              id="list-appliances"
+              class="max-h-64 overflow-auto divide-y"
+            ></ul>
+          </div>
+        </div>
+
+        <!-- Ustensiles -->
+        <div class="relative" data-filter="ustensils">
+          <button
+            type="button"
+            id="toggle-ustensils"
+            class="w-full p-4 rounded-lg border border-gray-300 flex justify-between items-center hover:border-yellow-400"
+            aria-expanded="false"
+            aria-controls="panel-ustensils"
+          >
+            <span>Ustensiles</span>
+            <span aria-hidden="true">▾</span>
+          </button>
+          <div
+            id="panel-ustensils"
+            class="hidden absolute z-20 left-0 right-0 mt-2 bg-white rounded-xl shadow p-3"
+          >
+            <label for="input-ustensils" class="sr-only"
+              >Rechercher un ustensile</label
+            >
+            <input
+              id="input-ustensils"
+              type="text"
+              placeholder="Rechercher…"
+              class="w-full p-2 mb-2 border rounded focus:ring-2 focus:ring-yellow-400"
+            />
+            <ul
+              id="list-ustensils"
+              class="max-h-64 overflow-auto divide-y"
+            ></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTENU -->
+    <main class="max-w-5xl mx-auto p-4 mt-12">
       <section
         id="recipesList"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
       >
-        <!-- Les recettes -->
+        <!-- Injecté par JS -->
       </section>
     </main>
 
