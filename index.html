@@ -9,7 +9,7 @@
     <!-- Rognage multi-lignes sans plugin -->
     <style>
       .line-clamp-3 {
-        display: -webkit-box;
+        display: box;
         line-clamp: 3;
         box-orient: vertical;
         overflow: hidden;
@@ -17,22 +17,29 @@
     </style>
   </head>
   <body class="bg-gray-100 text-gray-900">
-    <!-- HEADER (déjà conforme) -->
+    <!-- HEADER -->
     <header
       class="relative h-[650px] bg-cover bg-center"
       style="background-image: url('assets/hero-banner.png')"
     >
+      <!-- Logo -->
       <div
-        class="relative z-10 max-w-5xl mx-auto px-4 h-full flex flex-col justify-center items-center text-center"
+        class="absolute top-6 left-4 sm:left-6 md:left-8 flex items-center space-x-2 z-20"
       >
-        <!-- Logo -->
-        <div class="absolute top-6 left-0 flex items-center space-x-2">
-          <img src="assets/logo.png" alt="Logo Les Petits Plats" class="h-8" />
-        </div>
+        <img
+          src="assets/logo.png"
+          alt="Logo Les Petits Plats"
+          class="h-6 sm:h-8 md:h-10"
+        />
+      </div>
 
+      <!-- Contenu centré -->
+      <div
+        class="relative z-10 max-w-7xl mx-auto px-4 h-full flex flex-col justify-center items-center text-center"
+      >
         <!-- Titre principal -->
         <h1
-          class="text-yellow-400 font-extrabold text-3xl md:text-4xl leading-tight uppercase mb-6 max-w-3xl"
+          class="text-yellow-300 font-bold font-[Anton] text-3xl md:text-4xl leading-tight uppercase mb-6 max-w-3xl"
         >
           Cherchez parmi plus de 1500 recettes<br />
           du quotidien, simples et délicieuses
@@ -87,7 +94,7 @@
     </header>
 
     <!-- FILTRES avancés -->
-    <section class="bg-white py-6 shadow-sm">
+    <section class="bg-gray-100 py-6">
       <div class="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Ingrédients -->
         <div class="relative" data-filter="ingredients">
