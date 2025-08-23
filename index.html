@@ -5,16 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Les Petits Plats</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Rognage multi-lignes sans plugin -->
-    <style>
-      .line-clamp-3 {
-        display: box;
-        line-clamp: 3;
-        box-orient: vertical;
-        overflow: hidden;
-      }
-    </style>
   </head>
   <body class="bg-gray-100 text-gray-900">
     <!-- HEADER -->
@@ -94,7 +84,7 @@
     </header>
 
     <!-- FILTRES avancés -->
-    <section class="bg-gray-100 py-6">
+    <div class="bg-gray-100 py-6">
       <div class="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Ingrédients -->
         <div class="relative" data-filter="ingredients">
@@ -192,14 +182,16 @@
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
     <!-- CONTENU -->
     <main class="max-w-5xl mx-auto p-4 mt-12">
       <section
+        aria-labelledby="recipes-heading"
         id="recipesList"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
       >
+        <h2 id="recipes-heading" class="sr-only">Liste des recettes</h2>
         <!-- Injecté par JS -->
       </section>
     </main>

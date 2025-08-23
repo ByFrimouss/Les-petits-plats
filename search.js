@@ -82,17 +82,16 @@ function applyFilters() {
       if (!found) return false;
     }
 
-    // 3) Tags - appareils : OR (appareil ∈ sélection si sélection non vide)
+    // 3) Tags - appareils : AND (tous les appareils sélectionnés doivent correspondre)
     if (state.tags.appliances.size > 0) {
       const app = normalize(r.appliance || "");
-      let ok = false;
-      for (const tag of state.tags.appliances) {
-        if (app === normalize(tag)) {
-          ok = true;
-          break;
-        }
-      }
-      if (!ok) return false;
+
+      // Vérifie que **tous les tags sélectionnés** correspondent
+      const allMatch = Array.from(state.tags.appliances).every(
+        (tag) => app === normalize(tag)
+      );
+
+      if (!allMatch) return false;
     }
 
     // 4) Tags - ustensiles : AND
@@ -362,3 +361,126 @@ displayRecipes(recipes); // Affiche tout au chargement
 updateAdvancedLists(recipes); // Alimente les listes de filtres
 renderTags(); // Aucun tag au départ
 console.log("Nombre de recettes chargées :", recipes.length);
+
+// ===============================
+//      Version "for"
+// ===============================
+function applyFiltersWithFor() {
+  const nq = normalize(state.query);
+  const hasQuery = nq.length >= 3;
+  const filtered = [];
+
+  for (let i = 0; i < recipes.length; i++) {
+    const r = recipes[i];
+    let match = true;
+
+    // 1) Filtre principal
+    if (hasQuery) {
+      const inName = normalize(r.name).includes(nq);
+      const inDesc = normalize(r.description).includes(nq);
+      let inIngr = false;
+      for (const ing of r.ingredients || []) {
+        if (normalize(ing.ingredient).includes(nq)) {
+          inIngr = true;
+          break;
+        }
+      }
+      if (!(inName || inDesc || inIngr)) match = false;
+    }
+
+    // 2) Tags - ingrédients (AND)
+    for (const ing of state.tags.ingredients) {
+      let found = false;
+      for (const i of r.ingredients || []) {
+        if (normalize(i.ingredient) === normalize(ing)) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        match = false;
+        break;
+      }
+    }
+
+    // 3) Tags - appareils (OR)
+    if (match && state.tags.appliances.size > 0) {
+      const app = normalize(r.appliance || "");
+      let ok = false;
+      for (const tag of state.tags.appliances) {
+        if (app === normalize(tag)) {
+          ok = true;
+          break;
+        }
+      }
+      if (!ok) match = false;
+    }
+
+    // 4) Tags - ustensiles (AND)
+    if (match) {
+      for (const ust of state.tags.ustensils) {
+        let found = false;
+        for (const u of r.ustensils || []) {
+          if (normalize(u) === normalize(ust)) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          match = false;
+          break;
+        }
+      }
+    }
+
+    if (match) filtered.push(r);
+  }
+
+  return filtered; // Retourne les résultats
+}
+
+// ===============================
+//      Version "filter"
+// ===============================
+function applyFiltersWithFilter() {
+  const nq = normalize(state.query);
+  const hasQuery = nq.length >= 3;
+
+  return recipes.filter((r) => {
+    // 1) Filtre principal
+    if (hasQuery) {
+      const inName = normalize(r.name).includes(nq);
+      const inDesc = normalize(r.description).includes(nq);
+      const inIngr = (r.ingredients || []).some((ing) =>
+        normalize(ing.ingredient).includes(nq)
+      );
+      if (!(inName || inDesc || inIngr)) return false;
+    }
+
+    // 2) Tags - ingrédients (AND)
+    const okIng = [...state.tags.ingredients].every((ing) =>
+      (r.ingredients || []).some(
+        (i) => normalize(i.ingredient) === normalize(ing)
+      )
+    );
+    if (!okIng) return false;
+
+    // 3) Tags - appareils (OR si non vide)
+    if (
+      state.tags.appliances.size > 0 &&
+      ![...state.tags.appliances].some(
+        (tag) => normalize(r.appliance || "") === normalize(tag)
+      )
+    ) {
+      return false;
+    }
+
+    // 4) Tags - ustensiles (AND)
+    const okUst = [...state.tags.ustensils].every((ust) =>
+      (r.ustensils || []).some((u) => normalize(u) === normalize(ust))
+    );
+    if (!okUst) return false;
+
+    return true;
+  });
+}
