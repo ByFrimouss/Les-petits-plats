@@ -7,6 +7,6 @@ export const state = {
   tags: {
     ingredients: new Set(),
     appliances: new Set(),
-    ustensils: new Set(),
+    ustensils: new Set(), // state.tags.ingredients / appliances / ustensils : Sets pour éviter doublons
   },
 };

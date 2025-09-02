@@ -1,5 +1,5 @@
 // ===============================
-// Gestion des panneaux de filtres
+// GESTION DES PANNEAUX DE FILTRES
 // ===============================
 
 // Objectifs :
@@ -67,6 +67,6 @@ export function initPanelToggles() {
 }
 
 // -------------------------------
-// Export des objets DOM pour usage externe (si nécessaire)
+// Export des objets DOM pour usage externe
 // -------------------------------
 export { toggles, panels, inputs };

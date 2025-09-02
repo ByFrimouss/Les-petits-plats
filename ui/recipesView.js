@@ -6,7 +6,7 @@ import { escapeHtml } from "../utils.js";
 export function displayRecipes(recipesToDisplay, recipesList, state) {
   recipesList.innerHTML = "";
 
-  // Aucun résultat
+  // Si aucune recette, affiche un message de suggestion
   if (recipesToDisplay.length === 0) {
     const x = state.query;
     const suggestions = ["tarte aux pommes", "poisson", "poulet", "chocolat"];
@@ -25,7 +25,7 @@ export function displayRecipes(recipesToDisplay, recipesList, state) {
     return;
   }
 
-  // Génère chaque carte recette
+  // Génère chaque carte recette avec image, temps, nom, description et ingrédients
   recipesToDisplay.forEach((recipe) => {
     const article = document.createElement("article");
     article.className =

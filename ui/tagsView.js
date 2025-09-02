@@ -1,6 +1,7 @@
 import { state } from "../state.js";
 import { recipes } from "../recettes.js";
 import { applyFiltersWithFilter as applyFilters } from "../search/filterSearch.js";
+// import { applyFiltersWithFor as applyFilters } from "../search/forSearch.js";
 import { displayRecipes } from "./recipesView.js";
 import { updateAdvancedLists } from "./advancedLists.js";
 
@@ -43,13 +44,14 @@ export function renderTags() {
   }
 }
 
-// Ajout d’un tag
+// Ajout d’un tag et met à jour l'UI
 export function addTag(category, value) {
   state.tags[category].add(value);
   refreshUI();
 }
 
-// Rafraîchit les recettes, listes et tags
+// Applique les filtres, met à jour les recettes et les tags
+
 function refreshUI() {
   const filtered = applyFilters(recipes);
   displayRecipes(filtered, recipesList, state);
