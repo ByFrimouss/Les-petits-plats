@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-100 text-gray-900">
-    <!-- HEADER -->
+    <!-- Header : image background -->
     <header
       class="relative h-[650px] bg-cover bg-center"
       style="background-image: url('assets/hero-banner.png')"
@@ -35,7 +35,7 @@
           du quotidien, simples et délicieuses
         </h1>
 
-        <!-- Barre de recherche -->
+        <!-- Barre de recherche avec input + bouton -->
         <form
           id="searchForm"
           class="w-full max-w-4xl flex"
@@ -74,7 +74,7 @@
           </button>
         </form>
 
-        <!-- TAGS actifs (aria-live pour annoncer les changements) -->
+        <!-- affichage dynamique des TAGS choisis (aria-live pour annoncer les mises à jour) -->
         <div
           id="activeTags"
           class="mt-4 flex flex-wrap gap-2 max-w-4xl"
@@ -84,8 +84,8 @@
     </header>
 
     <!-- FILTRES avancés -->
-    <div class="bg-gray-100 py-6">
-      <div class="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-gray-100 flex justify-around items-center py-6">
+      <div class="max-w-5xl mx-8 px-2 grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Ingrédients -->
         <div class="relative" data-filter="ingredients">
           <button
@@ -182,6 +182,11 @@
           </div>
         </div>
       </div>
+      <div
+        class="text-dark font-bold font-[Anton] text-xl md:text-2xl leading-tight mr-10 max-w-2xl"
+      >
+        1500 recettes
+      </div>
     </div>
 
     <!-- CONTENU -->
@@ -196,7 +201,7 @@
       </section>
     </main>
 
-    <script src="recettes.js"></script>
-    <script src="search.js"></script>
+    <!-- Inclusion du script JS principal en module (import / export) -->
+    <script type="module" src="index.js"></script>
   </body>
 </html>
