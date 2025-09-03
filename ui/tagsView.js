@@ -1,7 +1,7 @@
 import { state } from "../state.js";
 import { recipes } from "../recettes.js";
-import { applyFiltersWithFilter as applyFilters } from "../search/filterSearch.js";
-// import { applyFiltersWithFor as applyFilters } from "../search/forSearch.js";
+// import { applyFiltersWithFilter as applyFilters } from "../search/filterSearch.js";
+import { applyFiltersWithFor as applyFilters } from "../search/forSearch.js";
 import { displayRecipes } from "./recipesView.js";
 import { updateAdvancedLists } from "./advancedLists.js";
 

@@ -10,8 +10,8 @@ import { initPanelToggles } from "./ui/panels.js";
 import { recipes } from "./recettes.js";
 
 // Choix de l’algorithme
-// import { applyFiltersWithFor as applyFilters } from "./search/forSearch.js";
-import { applyFiltersWithFilter as applyFilters } from "./search/filterSearch.js";
+import { applyFiltersWithFor as applyFilters } from "./search/forSearch.js";
+// import { applyFiltersWithFilter as applyFilters } from "./search/filterSearch.js";
 
 // Sélecteurs DOM pour le formulaire et la liste des recettes
 const searchForm = document.getElementById("searchForm");
