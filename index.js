@@ -18,20 +18,28 @@ const searchForm = document.getElementById("searchForm");
 const searchInput = document.getElementById("searchInput");
 const recipesList = document.getElementById("recipesList");
 
-// Événement submit : filtre les recettes selon l'input et les tags
+// Fonction centrale : met à jour l'affichage en fonction de la recherche courante
+function handleSearch() {
+  // On récupère et nettoie la saisie utilisateur
+  state.query = searchInput.value.trim();
+
+  // On applique les filtres sur les recettes et on met à jour l'affichage principal
+  displayRecipes(applyFilters(recipes), recipesList, state);
+
+  // On met aussi à jour les listes avancées (tags, catégories, etc.)
+  updateAdvancedLists(applyFilters(recipes));
+}
+
+// Événement : soumission du formulaire (clic bouton ou touche "Entrée")
+// * empêche le rechargement de la page et lance la recherche
 searchForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  state.query = searchInput.value.trim();
-  displayRecipes(applyFilters(recipes), recipesList, state);
-  updateAdvancedLists(applyFilters(recipes));
+  handleSearch();
 });
 
-// Événement : saisie live pendant la saisie
-searchInput.addEventListener("input", () => {
-  state.query = searchInput.value.trim();
-  displayRecipes(applyFilters(recipes), recipesList, state);
-  updateAdvancedLists(applyFilters(recipes));
-});
+// Événement : saisie en direct dans le champ texte
+// * chaque frappe de clavier déclenche la recherche "live"
+searchInput.addEventListener("input", handleSearch);
 
 // Initialisation au chargement
 initPanelToggles();
