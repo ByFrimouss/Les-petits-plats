@@ -6,6 +6,25 @@ import { escapeHtml } from "../utils.js";
 export function displayRecipes(recipesToDisplay, recipesList, state) {
   recipesList.innerHTML = "";
 
+  // --- MAJ compteur ---
+  const countEl = document.getElementById("recipesCount");
+  if (countEl) {
+    // Si aucune recherche ni tag => on laisse le "1500 recettes"
+    const hasFilters =
+      state.query.length >= 3 ||
+      state.tags.ingredients.size > 0 ||
+      state.tags.appliances.size > 0 ||
+      state.tags.ustensils.size > 0;
+
+    if (hasFilters) {
+      countEl.textContent = `${recipesToDisplay.length} recette${
+        recipesToDisplay.length > 1 ? "s" : ""
+      }`;
+    } else {
+      countEl.textContent = `1500 recettes`;
+    }
+  }
+
   // Si aucune recette, affiche un message de suggestion
   if (recipesToDisplay.length === 0) {
     const x = state.query;

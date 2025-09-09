@@ -2,29 +2,35 @@
 // Fonctions utilitaires
 // ===============================
 
-// Normalisation (minuscule + suppression accents)
-// => permet des recherches insensibles à la casse/accents
-export const normalize = (s) =>
-  (s ?? "")
+// Normalisation (minuscule + suppression accents + simplification pluriel)
+// => permet des recherches insensibles à la casse/accents/singuliers/pluriels
+export const normalize = (s) => {
+  let str = (s ?? "")
     .toString()
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-// Normalisation singulier/pluriel (simple)
-// => retire le "s" final sauf si mot très court
-export const singularize = (s) => {
-  if (s.length > 3 && s.endsWith("s")) {
-    return s.slice(0, -1);
-  }
-  return s;
-};
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
 
-// Combine les deux : normalisation complète pour tags
-export const normalizeTag = (s) => singularize(normalize(s));
+  // --- Simplification pluriel → singulier ---
+  // On enlève un "s" final sauf pour certains mots qui finissent vraiment par "s"
+  const exceptions = ["us", "is", "os", "as", "bois", "jus"];
+  if (
+    str.length > 2 && // évite de couper des mots trop courts
+    str.endsWith("s") &&
+    !exceptions.some((ex) => str.endsWith(ex))
+  ) {
+    str = str.slice(0, -1);
+  }
+
+  return str;
+};
 
 // Retourne un tableau trié alphabétiquement et sans doublons
 export const toSortedUnique = (arr) =>
-  Array.from(new Set(arr.map(normalizeTag))).sort((a, b) => a.localeCompare(b));
+  Array.from(new Set(arr)).sort((a, b) =>
+    normalize(a).localeCompare(normalize(b))
+  );
 
 // Sécurise les affichages (évite injection HTML)
 // Toujours utiliser textContent ou cette fonction
