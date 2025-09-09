@@ -1,3 +1,6 @@
+import { updateAdvancedLists } from "./advancedLists.js";
+import { recipes } from "../recettes.js";
+
 // ===============================
 // GESTION DES PANNEAUX DE FILTRES
 // ===============================
@@ -53,7 +56,14 @@ export function closeAllPanels() {
   for (const type of Object.keys(panels)) {
     panels[type].classList.add("hidden");
     toggles[type].setAttribute("aria-expanded", "false");
+
+    // Réinitialise l'input associé
+    if (inputs[type]) {
+      inputs[type].value = "";
+    }
   }
+  // Quand on ferme tous les panneaux → on réaffiche les listes complètes
+  updateAdvancedLists(recipes);
 }
 
 // -------------------------------

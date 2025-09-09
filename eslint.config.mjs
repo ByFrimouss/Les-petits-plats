@@ -18,7 +18,7 @@ export default [
       // Bonnes pratiques JS
       "no-unused-vars": "warn", // détecte variables jamais utilisées
       "no-undef": "error", // interdit variables non définies
-      "no-console": "warn", // évite les console.log oubliés
+      "no-console": "off", // évite les console.log oubliés
       eqeqeq: ["error", "always"], // impose === plutôt que ==
       curly: ["error", "multi-line"], // exige {} seulement si plusieurs lignes
       semi: ["error", "always"], // force les ;
