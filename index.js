@@ -23,10 +23,10 @@ function handleSearch() {
   // On récupère et nettoie la saisie utilisateur
   state.query = searchInput.value.trim();
 
-  // On applique les filtres sur les recettes et on met à jour l'affichage principal
+  // J'applique les filtres sur les recettes et on met à jour l'affichage principal
   displayRecipes(applyFilters(recipes), recipesList, state);
 
-  // On met aussi à jour les listes avancées (tags, catégories, etc.)
+  // Je mets aussi à jour les listes avancées (tags, catégories, etc.)
   updateAdvancedLists(applyFilters(recipes));
 }
 
