@@ -16,12 +16,7 @@ const ingredientsInput = document.getElementById("input-ingredients");
 const appliancesInput = document.getElementById("input-appliances");
 const ustensilsInput = document.getElementById("input-ustensils");
 
-// ATTENTION : id exact dans index.html = "recipesList"
 const recipesList = document.getElementById("recipesList");
-
-// ===============================
-// Helpers
-// ===============================
 
 // Garde une seule représentation pour chaque clé normalisée,
 // mais conserve une valeur d'affichage (la première rencontrée).
