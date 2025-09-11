@@ -42,7 +42,6 @@ function createListItem(category, value) {
 
   li.addEventListener("click", () => {
     addTag(category, value);
-
     // Après ajout de tag, applyFilters + affichage est déclenché depuis tagsView (refreshUI)
   });
 
@@ -84,12 +83,9 @@ export function updateAdvancedLists(recipesFiltered) {
 // - Enter : ajoute un tag et filtre les cartes
 // ===============================
 function handleAdvancedSearchInput(category, inputEl, listEl) {
-  if (!inputEl) {
-    return;
-  }
+  if (!inputEl) return;
 
   // INPUT : filtrage visuel des <li>
-
   inputEl.addEventListener("input", (e) => {
     const value = e.target.value.trim();
     const nq = normalize(value);
@@ -106,6 +102,8 @@ function handleAdvancedSearchInput(category, inputEl, listEl) {
       li.style.display =
         nq.length < 3 || text.includes(nq) ? "list-item" : "none";
     });
+
+    // ⚠️ NE PAS filtrer les cartes ici ! Les cartes restent filtrées par la barre principale + tags sélectionnés
   });
 
   // KEYDOWN Enter : ajouter un tag permanent si correspondance exacte visible
