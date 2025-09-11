@@ -101,7 +101,7 @@ function handleAdvancedSearchInput(category, inputEl, listEl) {
     const value = e.target.value.trim();
     const nq = normalize(value);
 
-    // Filtrage visuel des <li> (affiche tout si < 3)
+    // Filtrage visuel des <li>
     Array.from(listEl.querySelectorAll("li")).forEach((li) => {
       const text = normalize(li.textContent);
       if (nq.length < 3) {
@@ -111,35 +111,9 @@ function handleAdvancedSearchInput(category, inputEl, listEl) {
       }
     });
 
-    // Base : recettes filtrées par la recherche principale + tags permanents
-    const baseFiltered = applyFilters(recipes);
-
-    // Si >=3 : on applique le filtre temporaire sur la catégorie
-    let filteredRecipes = baseFiltered;
-    if (nq.length >= 3) {
-      if (category === "ingredients") {
-        filteredRecipes = baseFiltered.filter((r) =>
-          (r.ingredients || []).some((i) =>
-            normalize(i.ingredient).includes(nq)
-          )
-        );
-      } else if (category === "appliances") {
-        filteredRecipes = baseFiltered.filter((r) =>
-          normalize(r.appliance || "").includes(nq)
-        );
-      } else if (category === "ustensils") {
-        filteredRecipes = baseFiltered.filter((r) =>
-          (r.ustensils || []).some((u) => normalize(u).includes(nq))
-        );
-      }
-    } else {
-      // <3 : on laisse baseFiltered (pas de filtre temporaire)
-      filteredRecipes = baseFiltered;
-    }
-
-    // Mise à jour des cartes et des listes (lists construites à partir des recettes filtrées)
-    displayRecipes(filteredRecipes, recipesList, state);
-    updateAdvancedLists(filteredRecipes);
+    // On ne filtre plus les recettes ici ! On met juste à jour les listes
+    const baseFiltered = applyFilters(recipes); // recettes filtrées par la recherche principale + tags
+    updateAdvancedLists(baseFiltered);
   });
 
   // KEYDOWN Enter : ajouter un tag permanent si correspondance exacte visible
