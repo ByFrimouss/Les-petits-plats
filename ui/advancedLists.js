@@ -102,8 +102,6 @@ function handleAdvancedSearchInput(category, inputEl, listEl) {
       li.style.display =
         nq.length < 3 || text.includes(nq) ? "list-item" : "none";
     });
-
-    // ⚠️ NE PAS filtrer les cartes ici ! Les cartes restent filtrées par la barre principale + tags sélectionnés
   });
 
   // KEYDOWN Enter : ajouter un tag permanent si correspondance exacte visible
