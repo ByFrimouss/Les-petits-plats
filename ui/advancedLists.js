@@ -76,73 +76,19 @@ function handleAdvancedSearchInput(category, inputEl, listEl) {
     const value = e.target.value.trim();
     const nq = normalize(value);
 
-    // --- Base filtrée (recherche principale + tags actifs) ---
-    const baseFiltered = applyFilters(recipes);
-
-    // --- Filtrage recettes selon saisie ---
-    const filteredRecipes =
-      nq.length >= 3
-        ? baseFiltered.filter((r) => {
-            if (category === "ingredients")
-              return (r.ingredients || []).some((i) =>
-                normalize(i.ingredient).includes(nq)
-              );
-            if (category === "appliances")
-              return normalize(r.appliance || "").includes(nq);
-            if (category === "ustensils")
-              return (r.ustensils || []).some((u) => normalize(u).includes(nq));
-            return true;
-          })
-        : baseFiltered;
-
-    // --- Filtrage visuel des suggestions ---
-    listEl.querySelectorAll("li").forEach((li) => {
+    // Filtrage visuel des <li>
+    Array.from(listEl.querySelectorAll("li")).forEach((li) => {
       const text = normalize(li.textContent);
-      li.style.display =
-        nq.length < 3 || text.includes(nq) ? "list-item" : "none";
+      if (nq.length < 3) {
+        li.style.display = "list-item";
+      } else {
+        li.style.display = text.includes(nq) ? "list-item" : "none";
+      }
     });
 
-    // --- Mise à jour cartes + listes pertinentes ---
-    displayRecipes(filteredRecipes, recipesList, state);
-    updateAdvancedLists(filteredRecipes);
-  });
-
-  // --- Enter pour ajouter un tag ---
-  inputEl.addEventListener("keydown", (ev) => {
-    if (ev.key === "Enter") {
-      ev.preventDefault();
-      const value = inputEl.value.trim();
-      if (value.length < 3) return;
-
-      const nq = normalize(value);
-
-      // Vérifie correspondance exacte dans suggestions visibles
-      const exactMatch = Array.from(listEl.querySelectorAll("li")).find(
-        (li) => li.style.display !== "none" && normalize(li.textContent) === nq
-      );
-
-      if (exactMatch) addTag(category, exactMatch.textContent);
-
-      // Reset input
-      inputEl.value = "";
-
-      // ⚡ Filtrage combiné : prend en compte les tags actifs et la saisie
-      const baseFiltered = applyFilters(recipes); // recettes filtrées par tags
-      const filteredRecipes = baseFiltered.filter((r) => {
-        if (category === "ingredients")
-          return (r.ingredients || []).some((i) =>
-            normalize(i.ingredient).includes(nq)
-          );
-        if (category === "appliances")
-          return normalize(r.appliance || "").includes(nq);
-        if (category === "ustensils")
-          return (r.ustensils || []).some((u) => normalize(u).includes(nq));
-        return true;
-      });
-
-      displayRecipes(filteredRecipes, recipesList, state);
-      updateAdvancedLists(filteredRecipes);
-    }
+    // On ne filtre plus les recettes ici ! On met juste à jour les listes
+    const baseFiltered = applyFilters(recipes); // recettes filtrées par la recherche principale + tags
+    updateAdvancedLists(baseFiltered);
   });
 }
 
