@@ -34,11 +34,16 @@ const inputs = {
 // -------------------------------
 export function togglePanel(type) {
   const isOpen = !panels[type].classList.contains("hidden");
-  panels[type].classList.toggle("hidden", isOpen);
-  toggles[type].setAttribute("aria-expanded", String(!isOpen));
 
-  // Focus sur l’input si ouverture
-  if (!isOpen) inputs[type].focus();
+  // Ferme tous les panneaux d'abord
+  closeAllPanels();
+
+  // Si le panneau était fermé avant le clic, on l'ouvre
+  if (!isOpen) {
+    panels[type].classList.remove("hidden");
+    toggles[type].setAttribute("aria-expanded", "true");
+    inputs[type].focus();
+  }
 }
 
 // -------------------------------
