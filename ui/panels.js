@@ -1,3 +1,7 @@
+// import { applyFiltersWithFor as applyFilters } from "../search/forSearch.js";
+import { applyFiltersWithFilter as applyFilters } from "../search/filterSearch.js";
+import { recipes } from "../recettes.js";
+import { updateAdvancedLists } from "../ui/advancedLists.js";
 // ===============================
 // GESTION DES PANNEAUX DE FILTRES
 // ===============================
@@ -43,6 +47,10 @@ export function togglePanel(type) {
     panels[type].classList.remove("hidden");
     toggles[type].setAttribute("aria-expanded", "true");
     inputs[type].focus();
+
+    // actualisation de la liste
+    const currentRecipes = applyFilters(recipes);
+    updateAdvancedLists(currentRecipes);
   }
 }
 

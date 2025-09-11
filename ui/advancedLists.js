@@ -1,4 +1,4 @@
-import { toSortedUnique, normalize } from "../utils.js";
+import { normalize } from "../utils.js";
 import { addTag } from "./tagsView.js";
 import { recipes } from "../recettes.js";
 import { displayRecipes } from "./recipesView.js";
@@ -16,6 +16,22 @@ const ingredientsInput = document.getElementById("input-ingredients");
 const appliancesInput = document.getElementById("input-appliances");
 const ustensilsInput = document.getElementById("input-ustensils");
 
+const recipesList = document.getElementById("recipesList");
+
+// Garde une seule représentation pour chaque clé normalisée,
+// mais conserve une valeur d'affichage (la première rencontrée).
+function uniqueSortedByNormalized(arr) {
+  const map = new Map();
+  arr.forEach((v) => {
+    if (!v || (typeof v === "string" && v.trim() === "")) return;
+    const key = normalize(v);
+    if (!map.has(key)) map.set(key, v);
+  });
+  return Array.from(map.values()).sort((a, b) =>
+    normalize(a).localeCompare(normalize(b))
+  );
+}
+
 // ===============================
 // Création item cliquable
 // ===============================
@@ -26,6 +42,7 @@ function createListItem(category, value) {
 
   li.addEventListener("click", () => {
     addTag(category, value);
+    // Après ajout de tag, applyFilters + affichage est déclenché depuis tagsView (refreshUI)
   });
 
   return li;
@@ -33,68 +50,92 @@ function createListItem(category, value) {
 
 // ===============================
 // Met à jour les 3 listes de filtres
+// (ne reçoit que les recettes filtrées pertinentes)
 // ===============================
-export function updateAdvancedLists(recipes) {
-  // --- Ingrédients ---
-  const ingredients = recipes.flatMap((r) =>
+export function updateAdvancedLists(recipesFiltered) {
+  // Ingrédients
+  const ingredients = recipesFiltered.flatMap((r) =>
     (r.ingredients || []).map((i) => i.ingredient)
   );
-
   ingredientsList.innerHTML = "";
-  Array.from(new Map(ingredients.map((val) => [normalize(val), val])).values()) // dédoublonnage sur normalize
-    .sort((a, b) => normalize(a).localeCompare(normalize(b)))
-    .forEach((val) =>
-      ingredientsList.appendChild(createListItem("ingredients", val))
-    );
+  uniqueSortedByNormalized(ingredients).forEach((val) =>
+    ingredientsList.appendChild(createListItem("ingredients", val))
+  );
 
-  // --- Appareils ---
-  const appliances = recipes.map((r) => r.appliance || "");
+  // Appareils
+  const appliances = recipesFiltered.map((r) => r.appliance || "");
   appliancesList.innerHTML = "";
-  Array.from(new Map(appliances.map((val) => [normalize(val), val])).values())
-    .sort((a, b) => normalize(a).localeCompare(normalize(b)))
-    .forEach((val) =>
-      appliancesList.appendChild(createListItem("appliances", val))
-    );
+  uniqueSortedByNormalized(appliances).forEach((val) =>
+    appliancesList.appendChild(createListItem("appliances", val))
+  );
 
-  // --- Ustensiles ---
-  const ustensils = recipes.flatMap((r) => r.ustensils || []);
+  // Ustensiles
+  const ustensils = recipesFiltered.flatMap((r) => r.ustensils || []);
   ustensilsList.innerHTML = "";
-  Array.from(new Map(ustensils.map((val) => [normalize(val), val])).values())
-    .sort((a, b) => normalize(a).localeCompare(normalize(b)))
-    .forEach((val) =>
-      ustensilsList.appendChild(createListItem("ustensils", val))
-    );
+  uniqueSortedByNormalized(ustensils).forEach((val) =>
+    ustensilsList.appendChild(createListItem("ustensils", val))
+  );
 }
 
 // ===============================
-// Recherche en live + ajout tag avec "Enter"
+// Filtrage live + Enter
+// - saisie : filtre les listes uniquement
+// - Enter : ajoute un tag et filtre les cartes
 // ===============================
 function handleAdvancedSearchInput(category, inputEl, listEl) {
   if (!inputEl) return;
 
+  // INPUT : filtrage visuel des <li>
   inputEl.addEventListener("input", (e) => {
     const value = e.target.value.trim();
     const nq = normalize(value);
 
-    // Filtrage visuel des <li>
+    // Base : recettes filtrées par la recherche principale + tags permanents
+    const baseFiltered = applyFilters(recipes);
+
+    // Mise à jour des listes déroulantes uniquement
+    updateAdvancedLists(baseFiltered);
+
+    // Filtrage visuel des <li> selon l'input
     Array.from(listEl.querySelectorAll("li")).forEach((li) => {
       const text = normalize(li.textContent);
-      if (nq.length < 3) {
-        li.style.display = "list-item";
-      } else {
-        li.style.display = text.includes(nq) ? "list-item" : "none";
-      }
+      li.style.display =
+        nq.length < 3 || text.includes(nq) ? "list-item" : "none";
     });
+  });
 
-    // On ne filtre plus les recettes ici ! On met juste à jour les listes
-    const baseFiltered = applyFilters(recipes); // recettes filtrées par la recherche principale + tags
-    updateAdvancedLists(baseFiltered);
+  // KEYDOWN Enter : ajouter un tag permanent si correspondance exacte visible
+  inputEl.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Enter") return;
+    ev.preventDefault();
+
+    const value = inputEl.value.trim();
+    if (value.length < 3) return;
+    const nq = normalize(value);
+
+    // Cherche une correspondance exacte parmi les suggestions visibles
+    const exactMatch = Array.from(listEl.querySelectorAll("li")).find(
+      (li) => li.style.display !== "none" && normalize(li.textContent) === nq
+    );
+
+    if (exactMatch) {
+      // Ajoute le tag permanent
+      addTag(category, exactMatch.textContent);
+      inputEl.value = "";
+
+      // Applique les filtres permanents (barre + tags) sur les cartes
+      const afterTag = applyFilters(recipes);
+      displayRecipes(afterTag, recipesList, state);
+      updateAdvancedLists(afterTag);
+    } else {
+      console.log(
+        `[Enter] Pas de tag exact, on garde la recherche temporaire : "${value}"`
+      );
+    }
   });
 }
 
-// ===============================
 // Branche les 3 inputs
-// ===============================
 handleAdvancedSearchInput("ingredients", ingredientsInput, ingredientsList);
 handleAdvancedSearchInput("appliances", appliancesInput, appliancesList);
 handleAdvancedSearchInput("ustensils", ustensilsInput, ustensilsList);
