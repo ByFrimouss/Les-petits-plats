@@ -23,13 +23,9 @@ const recipesList = document.getElementById("recipesList");
 function uniqueSortedByNormalized(arr) {
   const map = new Map();
   arr.forEach((v) => {
-    if (!v || (typeof v === "string" && v.trim() === "")) {
-      return;
-    }
+    if (!v || (typeof v === "string" && v.trim() === "")) return;
     const key = normalize(v);
-    if (!map.has(key)) {
-      map.set(key, v);
-    }
+    if (!map.has(key)) map.set(key, v);
   });
   return Array.from(map.values()).sort((a, b) =>
     normalize(a).localeCompare(normalize(b))
@@ -46,7 +42,8 @@ function createListItem(category, value) {
 
   li.addEventListener("click", () => {
     addTag(category, value);
-    // après ajout de tag, applyFilters + affichage est déclenché depuis tagsView (refreshUI)
+
+    // Après ajout de tag, applyFilters + affichage est déclenché depuis tagsView (refreshUI)
   });
 
   return li;
@@ -83,44 +80,41 @@ export function updateAdvancedLists(recipesFiltered) {
 
 // ===============================
 // Filtrage live + Enter
-// - traite la saisie comme filtre temporaire pour les cartes et les listes
-// - Enter ajoute un tag exact (si présent dans les suggestions visibles)
+// - saisie : filtre les listes uniquement
+// - Enter : ajoute un tag et filtre les cartes
 // ===============================
 function handleAdvancedSearchInput(category, inputEl, listEl) {
   if (!inputEl) {
     return;
   }
 
-  // INPUT : filtrage visuel + filtrage des cartes (à partir de 3 chars)
+  // INPUT : filtrage visuel des <li>
+
   inputEl.addEventListener("input", (e) => {
     const value = e.target.value.trim();
     const nq = normalize(value);
 
-    // Filtrage visuel des <li>
+    // Base : recettes filtrées par la recherche principale + tags permanents
+    const baseFiltered = applyFilters(recipes);
+
+    // Mise à jour des listes déroulantes uniquement
+    updateAdvancedLists(baseFiltered);
+
+    // Filtrage visuel des <li> selon l'input
     Array.from(listEl.querySelectorAll("li")).forEach((li) => {
       const text = normalize(li.textContent);
-      if (nq.length < 3) {
-        li.style.display = "list-item";
-      } else {
-        li.style.display = text.includes(nq) ? "list-item" : "none";
-      }
+      li.style.display =
+        nq.length < 3 || text.includes(nq) ? "list-item" : "none";
     });
-
-    // On ne filtre plus les recettes ici ! On met juste à jour les listes
-    const baseFiltered = applyFilters(recipes); // recettes filtrées par la recherche principale + tags
-    updateAdvancedLists(baseFiltered);
   });
 
   // KEYDOWN Enter : ajouter un tag permanent si correspondance exacte visible
   inputEl.addEventListener("keydown", (ev) => {
-    if (ev.key !== "Enter") {
-      return;
-    }
+    if (ev.key !== "Enter") return;
     ev.preventDefault();
+
     const value = inputEl.value.trim();
-    if (value.length < 3) {
-      return;
-    }
+    if (value.length < 3) return;
     const nq = normalize(value);
 
     // Cherche une correspondance exacte parmi les suggestions visibles
@@ -129,16 +123,15 @@ function handleAdvancedSearchInput(category, inputEl, listEl) {
     );
 
     if (exactMatch) {
-      // Cas 1 : correspondance exacte → on ajoute le tag
+      // Ajoute le tag permanent
       addTag(category, exactMatch.textContent);
       inputEl.value = "";
+
+      // Applique les filtres permanents (barre + tags) sur les cartes
       const afterTag = applyFilters(recipes);
       displayRecipes(afterTag, recipesList, state);
       updateAdvancedLists(afterTag);
     } else {
-      // Cas 2 : pas de correspondance → on garde les résultats actuels
-      // donc on NE reset PAS l'input et on NE relance PAS applyFilters
-      // => les 2 recettes restent affichées
       console.log(
         `[Enter] Pas de tag exact, on garde la recherche temporaire : "${value}"`
       );
