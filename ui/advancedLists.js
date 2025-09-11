@@ -1,9 +1,9 @@
-import { toSortedUnique, normalize } from "../utils.js";
+import { normalize } from "../utils.js";
 import { addTag } from "./tagsView.js";
 import { recipes } from "../recettes.js";
 import { displayRecipes } from "./recipesView.js";
 import { state } from "../state.js";
-import { applyFiltersWithFilter as applyFilters } from "../search/filterSearch.js";
+import { applyFiltersWithFor as applyFilters } from "../search/forSearch.js";
 
 // ===============================
 // Sélecteurs DOM
@@ -16,6 +16,26 @@ const ingredientsInput = document.getElementById("input-ingredients");
 const appliancesInput = document.getElementById("input-appliances");
 const ustensilsInput = document.getElementById("input-ustensils");
 
+const recipesList = document.getElementById("recipesList");
+
+// Garde une seule représentation pour chaque clé normalisée,
+// mais conserve une valeur d'affichage (la première rencontrée).
+function uniqueSortedByNormalized(arr) {
+  const map = new Map();
+  arr.forEach((v) => {
+    if (!v || (typeof v === "string" && v.trim() === "")) {
+      return;
+    }
+    const key = normalize(v);
+    if (!map.has(key)) {
+      map.set(key, v);
+    }
+  });
+  return Array.from(map.values()).sort((a, b) =>
+    normalize(a).localeCompare(normalize(b))
+  );
+}
+
 // ===============================
 // Création item cliquable
 // ===============================
@@ -26,6 +46,7 @@ function createListItem(category, value) {
 
   li.addEventListener("click", () => {
     addTag(category, value);
+    // après ajout de tag, applyFilters + affichage est déclenché depuis tagsView (refreshUI)
   });
 
   return li;
@@ -33,122 +54,99 @@ function createListItem(category, value) {
 
 // ===============================
 // Met à jour les 3 listes de filtres
+// (ne reçoit que les recettes filtrées pertinentes)
 // ===============================
-export function updateAdvancedLists(recipes) {
-  // --- Ingrédients ---
-  const ingredients = recipes.flatMap((r) =>
+export function updateAdvancedLists(recipesFiltered) {
+  // Ingrédients
+  const ingredients = recipesFiltered.flatMap((r) =>
     (r.ingredients || []).map((i) => i.ingredient)
   );
-
   ingredientsList.innerHTML = "";
-  Array.from(new Map(ingredients.map((val) => [normalize(val), val])).values()) // dédoublonnage sur normalize
-    .sort((a, b) => normalize(a).localeCompare(normalize(b)))
-    .forEach((val) =>
-      ingredientsList.appendChild(createListItem("ingredients", val))
-    );
+  uniqueSortedByNormalized(ingredients).forEach((val) =>
+    ingredientsList.appendChild(createListItem("ingredients", val))
+  );
 
-  // --- Appareils ---
-  const appliances = recipes.map((r) => r.appliance || "");
+  // Appareils
+  const appliances = recipesFiltered.map((r) => r.appliance || "");
   appliancesList.innerHTML = "";
-  Array.from(new Map(appliances.map((val) => [normalize(val), val])).values())
-    .sort((a, b) => normalize(a).localeCompare(normalize(b)))
-    .forEach((val) =>
-      appliancesList.appendChild(createListItem("appliances", val))
-    );
+  uniqueSortedByNormalized(appliances).forEach((val) =>
+    appliancesList.appendChild(createListItem("appliances", val))
+  );
 
-  // --- Ustensiles ---
-  const ustensils = recipes.flatMap((r) => r.ustensils || []);
+  // Ustensiles
+  const ustensils = recipesFiltered.flatMap((r) => r.ustensils || []);
   ustensilsList.innerHTML = "";
-  Array.from(new Map(ustensils.map((val) => [normalize(val), val])).values())
-    .sort((a, b) => normalize(a).localeCompare(normalize(b)))
-    .forEach((val) =>
-      ustensilsList.appendChild(createListItem("ustensils", val))
-    );
+  uniqueSortedByNormalized(ustensils).forEach((val) =>
+    ustensilsList.appendChild(createListItem("ustensils", val))
+  );
 }
 
 // ===============================
-// Recherche en live + ajout tag avec "Enter"
+// Filtrage live + Enter
+// - traite la saisie comme filtre temporaire pour les cartes et les listes
+// - Enter ajoute un tag exact (si présent dans les suggestions visibles)
 // ===============================
 function handleAdvancedSearchInput(category, inputEl, listEl) {
-  if (!inputEl) return;
+  if (!inputEl) {
+    return;
+  }
 
+  // INPUT : filtrage visuel + filtrage des cartes (à partir de 3 chars)
   inputEl.addEventListener("input", (e) => {
     const value = e.target.value.trim();
     const nq = normalize(value);
 
-    // --- Base filtrée (recherche principale + tags actifs) ---
-    const baseFiltered = applyFilters(recipes);
-
-    // --- Filtrage recettes selon saisie ---
-    const filteredRecipes =
-      nq.length >= 3
-        ? baseFiltered.filter((r) => {
-            if (category === "ingredients")
-              return (r.ingredients || []).some((i) =>
-                normalize(i.ingredient).includes(nq)
-              );
-            if (category === "appliances")
-              return normalize(r.appliance || "").includes(nq);
-            if (category === "ustensils")
-              return (r.ustensils || []).some((u) => normalize(u).includes(nq));
-            return true;
-          })
-        : baseFiltered;
-
-    // --- Filtrage visuel des suggestions ---
-    listEl.querySelectorAll("li").forEach((li) => {
+    // Filtrage visuel des <li>
+    Array.from(listEl.querySelectorAll("li")).forEach((li) => {
       const text = normalize(li.textContent);
-      li.style.display =
-        nq.length < 3 || text.includes(nq) ? "list-item" : "none";
+      if (nq.length < 3) {
+        li.style.display = "list-item";
+      } else {
+        li.style.display = text.includes(nq) ? "list-item" : "none";
+      }
     });
 
-    // --- Mise à jour cartes + listes pertinentes ---
-    displayRecipes(filteredRecipes, recipesList, state);
-    updateAdvancedLists(filteredRecipes);
+    // On ne filtre plus les recettes ici ! On met juste à jour les listes
+    const baseFiltered = applyFilters(recipes); // recettes filtrées par la recherche principale + tags
+    updateAdvancedLists(baseFiltered);
   });
 
-  // --- Enter pour ajouter un tag ---
+  // KEYDOWN Enter : ajouter un tag permanent si correspondance exacte visible
   inputEl.addEventListener("keydown", (ev) => {
-    if (ev.key === "Enter") {
-      ev.preventDefault();
-      const value = inputEl.value.trim();
-      if (value.length < 3) return;
+    if (ev.key !== "Enter") {
+      return;
+    }
+    ev.preventDefault();
+    const value = inputEl.value.trim();
+    if (value.length < 3) {
+      return;
+    }
+    const nq = normalize(value);
 
-      const nq = normalize(value);
+    // Cherche une correspondance exacte parmi les suggestions visibles
+    const exactMatch = Array.from(listEl.querySelectorAll("li")).find(
+      (li) => li.style.display !== "none" && normalize(li.textContent) === nq
+    );
 
-      // Vérifie correspondance exacte dans suggestions visibles
-      const exactMatch = Array.from(listEl.querySelectorAll("li")).find(
-        (li) => li.style.display !== "none" && normalize(li.textContent) === nq
-      );
-
-      if (exactMatch) addTag(category, exactMatch.textContent);
-
-      // Reset input
+    if (exactMatch) {
+      // Cas 1 : correspondance exacte → on ajoute le tag
+      addTag(category, exactMatch.textContent);
       inputEl.value = "";
-
-      // ⚡ Filtrage combiné : prend en compte les tags actifs et la saisie
-      const baseFiltered = applyFilters(recipes); // recettes filtrées par tags
-      const filteredRecipes = baseFiltered.filter((r) => {
-        if (category === "ingredients")
-          return (r.ingredients || []).some((i) =>
-            normalize(i.ingredient).includes(nq)
-          );
-        if (category === "appliances")
-          return normalize(r.appliance || "").includes(nq);
-        if (category === "ustensils")
-          return (r.ustensils || []).some((u) => normalize(u).includes(nq));
-        return true;
-      });
-
-      displayRecipes(filteredRecipes, recipesList, state);
-      updateAdvancedLists(filteredRecipes);
+      const afterTag = applyFilters(recipes);
+      displayRecipes(afterTag, recipesList, state);
+      updateAdvancedLists(afterTag);
+    } else {
+      // Cas 2 : pas de correspondance → on garde les résultats actuels
+      // donc on NE reset PAS l'input et on NE relance PAS applyFilters
+      // => les 2 recettes restent affichées
+      console.log(
+        `[Enter] Pas de tag exact, on garde la recherche temporaire : "${value}"`
+      );
     }
   });
 }
 
-// ===============================
 // Branche les 3 inputs
-// ===============================
 handleAdvancedSearchInput("ingredients", ingredientsInput, ingredientsList);
 handleAdvancedSearchInput("appliances", appliancesInput, appliancesList);
 handleAdvancedSearchInput("ustensils", ustensilsInput, ustensilsList);

@@ -53,6 +53,11 @@ export function closeAllPanels() {
   for (const type of Object.keys(panels)) {
     panels[type].classList.add("hidden");
     toggles[type].setAttribute("aria-expanded", "false");
+
+    // Réinitialise l'input du panneau fermé
+    if (inputs[type]) {
+      inputs[type].value = "";
+    }
   }
 }
 
